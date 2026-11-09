@@ -79,7 +79,7 @@
         }
         .col-izq {
             text-align: right;
-            white-space: pre; /* Vital para mantener los espacios de alineación */
+            white-space: pre; 
             padding-right: 1.5rem;
         }
         
@@ -118,12 +118,11 @@
         }
         .caja-explicacion h3 { margin-top: 0; color: var(--azul-oscuro); }
 
-        /* Clases de resaltado semántico */
-        .hl-resta { color: #e74c3c; } /* Rojo */
-        .hl-nuevo { color: #27ae60; } /* Verde */
-        .hl-bajada { color: #2980b9; } /* Azul */
-        .hl-raiz { color: #e67e22; } /* Naranja */
-        .hl-cifra { color: #8e44ad; } /* Morado */
+        .hl-resta { color: #e74c3c; } 
+        .hl-nuevo { color: #27ae60; } 
+        .hl-bajada { color: #2980b9; } 
+        .hl-raiz { color: #e67e22; } 
+        .hl-cifra { color: #8e44ad; } 
         .flecha { color: #e67e22; font-size: 1.8rem; vertical-align: middle; margin-left: 10px; }
         
     </style>
@@ -187,7 +186,6 @@
             estados = [];
             let totalGrupos = grupos.length;
             
-            // Variables base que acumulan la historia consolidada sin colores temporales
             let izqBase = grupos.join(".") + "\n"; 
             let rootText = "";
             let auxBase = "";
@@ -201,14 +199,15 @@
             });
 
             for(let i=0; i<totalGrupos; i++) {
-                // Cálculo de relleno para alineación perfecta a la derecha
-                let pendingStr = "";
-                for(let j=i+1; j<totalGrupos; j++) pendingStr += grupos[j];
-                let paddingRight = " ".repeat(pendingStr.length);
+                // Generamos un bloque invisible con los grupos restantes para forzar la alineación perfecta
+                let hiddenText = "";
+                for(let j=i+1; j<totalGrupos; j++) {
+                    hiddenText += "." + grupos[j];
+                }
+                let padHTML = `<span style="visibility: hidden; user-select: none;">${hiddenText}</span>`;
 
                 let currentGroup = grupos[i];
                 
-                // Unimos el resto anterior con el nuevo grupo bajado
                 if (i === 0) {
                     strRemainder = currentGroup;
                 } else {
@@ -218,21 +217,19 @@
                 let currValStr = strRemainder;
 
                 if (i > 0) {
-                    // Resaltamos de color azul lo que acabamos de bajar
                     let baseResto = remainder.toString().slice(0, -2);
                     if(remainder.toString() !== strRemainder) {
-                       // Caso de 0 a la izquierda
                        baseResto = strRemainder.slice(0, -2);
                     }
                     
-                    let lineaBajada = baseResto + `<span class="hl-bajada">${currentGroup}</span>` + paddingRight + "\n";
+                    let lineaBajada = baseResto + `<span class="hl-bajada">${currentGroup}</span>` + padHTML + "\n";
                     
                     estados.push({
                         izq: izqBase + lineaBajada, raiz: rootText, aux: auxBase,
                         titulo: "Bajar el siguiente grupo",
                         texto: `Bajamos el siguiente par de cifras (<b class="hl-bajada">${currentGroup}</b>) y lo colocamos junto al resto.<br><br>Ahora operamos con el <b>${currValStr}</b>.`
                     });
-                    izqBase += currValStr + paddingRight + "\n";
+                    izqBase += currValStr + padHTML + "\n";
                 }
 
                 let bestX = 0, bestProd = 0, base = 0;
@@ -280,22 +277,22 @@
                     auxBase += (auxBase ? "\n\n" : "") + `${base}${bestX} × ${bestX} = ${bestProd}`;
                 }
 
-                // Aplicar la resta
+                // Aplicar la resta con alineación perfecta
                 let rawSubStr = "-" + bestProd.toString();
-                let subLine = `<span class="hl-resta">${rawSubStr}</span>` + paddingRight + "\n";
+                let subLine = `<span class="hl-resta">${rawSubStr}</span>` + padHTML + "\n";
                 let maxLen = Math.max(currValStr.length, rawSubStr.length);
-                let dashLine = "-".repeat(maxLen) + paddingRight + "\n";
+                let dashLine = `<span class="hl-resta">${"-".repeat(maxLen)}</span>` + padHTML + "\n";
                 
                 izqBase += subLine + dashLine;
                 remainder = remainder - bestProd;
                 
                 let finalRest = remainder === 0 ? "0" : remainder.toString();
                 if(remainder === 0 && i !== totalGrupos - 1) {
-                    finalRest = "0"; // Mantenemos el 0 para juntarlo en el paso siguiente
+                    finalRest = "0"; 
                 }
 
                 estados.push({
-                    izq: izqBase + finalRest + paddingRight + "\n", 
+                    izq: izqBase + finalRest + padHTML + "\n", 
                     raiz: rootText + `<span class="hl-nuevo">${bestX}</span>`, 
                     aux: auxBase,
                     titulo: "Restar y subir a la raíz",
